@@ -8,6 +8,7 @@ import torch.nn as nn
 import bitsandbytes as bnb
 from datasets import load_dataset
 import transformers
+import wandb
 
 assert (
     "LlamaTokenizer" in transformers._import_structure["models.llama"]
@@ -135,7 +136,8 @@ def train(
     )
     model = get_peft_model(model, config)
 
-    data = load_dataset("json", data_files=data_path)
+    data = load_dataset("yahma/alpaca-cleaned")
+    # data = load_dataset("json", data_files=data_path)
 
     if val_set_size > 0:
         train_val = data["train"].train_test_split(
@@ -146,6 +148,8 @@ def train(
     else:
         train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
         val_data = None
+
+    wandb.init(project="tuned-alpaca")
 
     trainer = transformers.Trainer(
         model=model,
@@ -162,9 +166,9 @@ def train(
             evaluation_strategy="steps" if val_set_size > 0 else "no",
             save_strategy="steps",
             eval_steps=200 if val_set_size > 0 else None,
-            save_steps=200,
+            save_steps=600,
             output_dir=output_dir,
-            save_total_limit=3,
+            save_total_limit=2,
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
