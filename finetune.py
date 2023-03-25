@@ -34,6 +34,7 @@ def train(
     learning_rate: float = 3e-4,
     cutoff_len: int = 1024,
     val_set_size: int = 2000,
+    warmup_steps: int = 0,
     # lora hyperparams
     lora_r: int = 8,
     lora_alpha: int = 16,
@@ -57,6 +58,7 @@ def train(
         f"learning_rate: {learning_rate}\n"
         f"cutoff_len: {cutoff_len}\n"
         f"val_set_size: {val_set_size}\n"
+        f"warmup_steps: {warmup_steps}\n"
         f"lora_r: {lora_r}\n"
         f"lora_alpha: {lora_alpha}\n"
         f"lora_dropout: {lora_dropout}\n"
@@ -158,7 +160,7 @@ def train(
         args=transformers.TrainingArguments(
             per_device_train_batch_size=micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
-            warmup_steps=100,
+            warmup_steps=warmup_steps,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
             fp16=True,
